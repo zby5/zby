@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#2563eb" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <title>家教老师信息总表</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #fff;
+      --text: #172033;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --soft: #f1f5f9;
+      --accent: #2563eb;
+      --ok: #16a34a;
+      --danger: #dc2626;
+      --warn-bg: #fffbeb;
+      --warn: #92400e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap { max-width: 1440px; margin: 0 auto; padding: 18px; }
+    .hero, .card {
+      background: var(--card);
+      border-radius: 22px;
+      box-shadow: 0 8px 28px rgba(15, 23, 42, .06);
+      border: 1px solid rgba(226, 232, 240, .85);
+    }
+    .hero { padding: 20px; margin-bottom: 16px; display: flex; gap: 16px; justify-content: space-between; align-items: center; }
+    h1 { margin: 0 0 6px; font-size: 28px; }
+    h2 { margin: 0; font-size: 18px; }
+    h3 { margin: 0; font-size: 16px; }
+    p { margin: 0; color: var(--muted); line-height: 1.65; }
+    .tag { display: inline-block; background: var(--soft); color: var(--muted); border-radius: 999px; padding: 6px 12px; margin-bottom: 8px; font-size: 13px; }
+    .grid { display: grid; grid-template-columns: 420px minmax(0, 1fr); gap: 16px; align-items: start; }
+    .card { padding: 16px; }
+    .row { display: flex; gap: 10px; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; }
+    textarea {
+      width: 100%;
+      min-height: 470px;
+      resize: vertical;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px;
+      font-size: 14px;
+      line-height: 1.65;
+      outline: none;
+      background: #fff;
+    }
+    input, select {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      outline: none;
+      font-size: 14px;
+      background: #fff;
+    }
+    textarea:focus, input:focus, select:focus { border-color: #94a3b8; }
+    select { min-width: 84px; cursor: pointer; }
+    button {
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 12px;
+      padding: 10px 13px;
+      font-weight: 650;
+      cursor: pointer;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+    button.secondary { background: var(--soft); color: var(--text); }
+    button.ok { background: var(--ok); }
+    button.danger { background: var(--danger); }
+    button.small { padding: 7px 10px; font-size: 13px; border-radius: 10px; }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    .hint { margin-top: 12px; padding: 13px; background: var(--soft); border-radius: 16px; font-size: 14px; color: var(--muted); line-height: 1.7; }
+    .actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 12px; }
+    .stats { display: grid; grid-template-columns: repeat(3, 110px); gap: 10px; }
+    .stat { background: var(--soft); border-radius: 16px; padding: 12px; text-align: center; }
+    .stat b { display: block; font-size: 24px; }
+    .stat span { color: var(--muted); font-size: 13px; }
+    .table-wrap { overflow: auto; border: 1px solid var(--border); border-radius: 18px; background: #fff; max-height: 440px; }
+    .summary-wrap { max-height: 520px; }
+    table { border-collapse: collapse; min-width: 1420px; width: 100%; font-size: 14px; }
+    th, td { padding: 10px 11px; border-bottom: 1px solid #edf2f7; text-align: left; vertical-align: top; }
+    th { background: var(--soft); position: sticky; top: 0; z-index: 1; white-space: nowrap; }
+    td { max-width: 260px; line-height: 1.55; color: #334155; }
+    tr:hover td { background: #f8fafc; }
+    .warn { background: var(--warn-bg); color: var(--warn); border-radius: 9px; padding: 5px 7px; display: inline-block; }
+    .muted { color: #cbd5e1; }
+    .section { margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--border); }
+    .summary-note { margin-bottom: 12px; padding: 12px 14px; background: #f8fafc; border-radius: 16px; color: var(--muted); font-size: 14px; line-height: 1.7; }
+    .pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 9px; border-radius: 999px; background: #ecfdf5; color: #166534; font-size: 13px; font-weight: 650; }
+    .toast { position: fixed; right: 18px; bottom: 18px; background: #111827; color: #fff; padding: 12px 16px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.18); opacity: 0; transform: translateY(10px); transition: .2s; pointer-events: none; z-index: 999; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .login-page { min-height: 100vh; display: grid; place-items: center; padding: 18px; }
+    .login-card { width: min(460px, 100%); background: #fff; border-radius: 24px; box-shadow: 0 18px 50px rgba(15,23,42,.10); padding: 24px; border: 1px solid var(--border); }
+    .login-card input { width: 100%; margin-top: 10px; }
+    .login-card button { width: 100%; margin-top: 12px; }
+    .error { color: #dc2626; margin-top: 10px; font-size: 14px; min-height: 22px; }
+    .top-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .user-badge { color: var(--muted); font-size: 13px; background: var(--soft); padding: 8px 10px; border-radius: 999px; }
+    @media (max-width: 980px) {
+      .wrap { padding: 12px; }
+      .hero { flex-direction: column; align-items: flex-start; }
+      .grid { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: repeat(3, minmax(88px, 1fr)); width: 100%; }
+      h1 { font-size: 24px; }
+      textarea { min-height: 320px; }
+      .table-wrap { max-height: 360px; }
+      input#search { width: 100%; }
+      .top-actions { width: 100%; }
+      .top-actions button, .top-actions input { flex: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div id="loginPage" class="login-page">
+    <div class="login-card">
+      <span class="tag">家教总表 · 云端登录版</span>
+      <h1>登录</h1>
+      <p>五位成员用账号密码登录后，共用同一份云端老师总表。</p>
+      <input id="email" type="email" placeholder="账号邮箱，例如 liu@example.com" autocomplete="email" />
+      <input id="password" type="password" placeholder="密码" autocomplete="current-password" />
+      <button id="loginBtn">登录</button>
+      <button id="signupBtn" class="secondary">注册账号</button>
+      <div class="error" id="loginError"></div>
+      <div class="hint">正式使用时，建议先创建好五个账号，然后在 Supabase 里关闭公开注册。</div>
+    </div>
+  </div>
+
+  <div id="app" class="wrap" style="display:none;">
+    <section class="hero">
+      <div>
+        <span class="tag">手机电脑互通 · PWA 网页 APP</span>
+        <h1>家教老师信息总表</h1>
+        <p>粘贴简历识别老师信息，选择添加人后添加到云端总表。电脑和手机登录后同步查看。</p>
+      </div>
+      <div class="stats">
+        <div class="stat"><b id="count">0</b><span>识别份数</span></div>
+        <div class="stat"><b id="savedCount">0</b><span>总表人数</span></div>
+        <div class="stat"><b id="complete">0%</b><span>完整度</span></div>
+      </div>
+    </section>
+
+    <div class="row">
+      <div class="user-badge" id="userBadge">已登录</div>
+      <div class="top-actions">
+        <button class="secondary" id="refreshBtn">刷新云端总表</button>
+        <button class="secondary" id="installBtn" style="display:none;">安装到桌面</button>
+        <button class="danger" id="logoutBtn">退出登录</button>
+      </div>
+    </div>
+
+    <main class="grid">
+      <section class="card">
+        <div class="row">
+          <h2>简历文本</h2>
+          <button class="secondary" id="clearBtn">清空识别区</button>
+        </div>
+        <textarea id="input" placeholder="把老师简历粘贴到这里。多份简历可用 --- 或空三行分隔。"></textarea>
+        <div class="hint">
+          <b>流程：</b>粘贴简历 → 选择“添加人” → 点击“添加到总表” → 保存到云端。<br>
+          <b>添加人：</b>刘、朱、陈、路、白。<br>
+          <b>手机端：</b>用浏览器打开网址，可通过“添加到主屏幕/桌面”像 APP 一样使用。
+        </div>
+        <div class="actions">
+          <button id="sampleBtn">填入示例</button>
+          <button class="secondary" id="downloadCurrentBtn">导出当前识别 CSV</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="row">
+          <h2>识别结果</h2>
+          <div class="top-actions">
+            <input id="search" placeholder="搜索科目/学校/姓名" />
+            <button class="secondary" id="copyCurrentBtn">复制当前识别</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr id="thead"></tr></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="section">
+          <div class="row">
+            <div>
+              <h3>云端老师信息总表 <span class="pill" id="saveStatus">已连接云端</span></h3>
+              <p>所有成员登录后看到同一份总表。</p>
+            </div>
+            <div class="top-actions">
+              <button class="secondary" id="copySummaryBtn">复制总表</button>
+              <button id="downloadSummaryBtn">导出总表 CSV</button>
+            </div>
+          </div>
+
+          <div class="summary-note">
+            总表字段：序号、添加人、姓名、学校、专业、学历/年级、可教科目、可教年级、教学经验、期望薪资、联系方式、备注/风险、保存时间。
+          </div>
+
+          <div class="table-wrap summary-wrap">
+            <table>
+              <thead><tr id="summaryThead"></tr></thead>
+              <tbody id="summaryTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast">已完成</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // === 部署前必须替换这两项 ===
+    const SUPABASE_URL = "https://vjtguoyvlrhwmjeraiyh.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_eOHEDV3TTGQp9zpHR4DpXA_spzWRy-s";
+
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const sampleText = `姓名：张三
+性别：男
+年龄：22
+学校：天津大学
+专业：机械工程
+学历：硕士在读
+可授课科目：初高中数学、物理
+教学经验：两年家教经验，带过高一数学，学生从80分提升到110分
+可授课年级：初中、高中
+期望薪资：120元/小时
+联系方式：13812345678
+授课方式：线上/线下
+
+---
+
+李四，女，南开大学英语专业本科，英语六级，擅长小学初中英语，有机构助教经历。电话：li4@example.com，期望100-150/h，可线上。`;
+
+    const adderOptions = ["", "刘", "朱", "陈", "路", "白"];
+
+    const fields = [
+      ["action", "操作"],
+      ["added_by", "添加人"],
+      ["name", "姓名"],
+      ["gender", "性别"],
+      ["age", "年龄"],
+      ["school", "学校"],
+      ["major", "专业"],
+      ["degree", "学历/年级"],
+      ["subjects", "可教科目"],
+      ["grades", "可教年级"],
+      ["experience", "教学经验"],
+      ["price", "期望薪资"],
+      ["mode", "授课方式"],
+      ["contact", "联系方式"],
+      ["notes", "备注/风险"]
+    ];
+
+    const exportFields = fields.filter(f => f[0] !== "action");
+
+    const summaryFields = [
+      ["idx", "序号"],
+      ["added_by", "添加人"],
+      ["name", "姓名"],
+      ["school", "学校"],
+      ["major", "专业"],
+      ["degree", "学历/年级"],
+      ["subjects", "可教科目"],
+      ["grades", "可教年级"],
+      ["experience", "教学经验"],
+      ["price", "期望薪资"],
+      ["contact", "联系方式"],
+      ["notes", "备注/风险"],
+      ["created_at_text", "保存时间"],
+      ["summaryAction", "操作"]
+    ];
+
+    const summaryExportFields = summaryFields.filter(f => f[0] !== "summaryAction");
+
+    const el = id => document.getElementById(id);
+    const loginPage = el("loginPage");
+    const app = el("app");
+    const input = el("input");
+    const search = el("search");
+    const tbody = el("tbody");
+    const thead = el("thead");
+    const summaryTbody = el("summaryTbody");
+    const summaryThead = el("summaryThead");
+    const count = el("count");
+    const savedCount = el("savedCount");
+    const complete = el("complete");
+    const toast = el("toast");
+    const saveStatus = el("saveStatus");
+
+    let rows = [];
+    let savedRows = [];
+    let addedByMap = {};
+    let deferredPrompt = null;
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 1600);
+    }
+
+    function clean(s) { return (s || "").replace(/\s+/g, " ").trim(); }
+
+    function pick(text, patterns) {
+      for (const p of patterns) {
+        const m = text.match(p);
+        if (m && m[1]) return clean(m[1]);
+      }
+      return "";
+    }
+
+    function rowKey(text, index) {
+      const base = clean(text).slice(0, 80);
+      return index + "|" + base;
+    }
+
+    function teacherKey(row) {
+      const contact = clean(row.contact);
+      const name = clean(row.name);
+      const school = clean(row.school);
+      const major = clean(row.major);
+      if (contact) return "contact:" + contact;
+      return "info:" + [name, school, major].join("|");
+    }
+
+    function firstLineLikeName(text) {
+      const lines = text.split(/\n+/).map(l => l.trim()).filter(Boolean);
+      for (const line of lines.slice(0, 4)) {
+        const normalized = line.replace(/[：:]/g, ":");
+        const m = normalized.match(/^(姓名|老师姓名|教师姓名)\s*:\s*([\u4e00-\u9fa5·]{2,5}|[A-Za-z][A-Za-z\s]{1,30})/);
+        if (m) return clean(m[2]);
+      }
+      const compact = text.slice(0, 80);
+      const m2 = compact.match(/^\s*([\u4e00-\u9fa5·]{2,4})(?:，|,|\s|\n)/);
+      if (m2 && !/(姓名|学校|专业|学历|电话|手机)/.test(m2[1])) return m2[1];
+      return "";
+    }
+
+    function extractExperience(text) {
+      const candidates = [];
+      const sentences = text.split(/[。；;\n]/).map(clean).filter(Boolean);
+      for (const s of sentences) {
+        if (/(家教|教学|授课|辅导|助教|机构|提分|带过|学生|班课|一对一)/.test(s)) candidates.push(s);
+      }
+      return candidates.slice(0, 3).join("；");
+    }
+
+    function inferSubjects(text) {
+      const subjects = ["语文", "数学", "英语", "物理", "化学", "生物", "历史", "地理", "政治", "科学", "奥数", "编程", "钢琴", "美术", "日语", "法语", "德语"];
+      const found = subjects.filter(s => text.includes(s));
+      const explicit = pick(text, [/(?:可授课科目|授课科目|家教科目|擅长科目|科目)\s*[：:]\s*([^\n。；;]+)/]);
+      const merged = Array.from(new Set([...(explicit ? explicit.split(/[、,，/\s]+/) : []), ...found].filter(Boolean)));
+      return merged.join("、");
+    }
+
+    function inferGrades(text) {
+      const gradeWords = [];
+      const rules = ["小学", "小升初", "初中", "初一", "初二", "初三", "中考", "高中", "高一", "高二", "高三", "高考", "大学", "成人"];
+      for (const r of rules) if (text.includes(r)) gradeWords.push(r);
+      const explicit = pick(text, [/(?:可授课年级|授课年级|可教年级|年级)\s*[：:]\s*([^\n。；;]+)/]);
+      const merged = Array.from(new Set([...(explicit ? explicit.split(/[、,，/\s]+/) : []), ...gradeWords].filter(Boolean)));
+      return merged.join("、");
+    }
+
+    function inferDegree(text) {
+      const explicit = pick(text, [/(?:学历|年级|教育背景)\s*[：:]\s*([^\n。；;]+)/]);
+      const degrees = ["博士", "硕士", "研究生", "本科", "专科", "大一", "大二", "大三", "大四", "研一", "研二", "研三", "在读", "毕业"];
+      const found = degrees.filter(d => text.includes(d)).join("、");
+      return explicit || found;
+    }
+
+    function inferMode(text) {
+      const modes = [];
+      if (/线上|网课|腾讯会议|视频|远程/.test(text)) modes.push("线上");
+      if (/线下|上门|到家|面授|附近/.test(text)) modes.push("线下");
+      const explicit = pick(text, [/(?:授课方式|上课方式|教学方式)\s*[：:]\s*([^\n。；;]+)/]);
+      return explicit || Array.from(new Set(modes)).join("/");
+    }
+
+    function detectRisk(row, raw) {
+      const notes = [];
+      if (!row.name) notes.push("缺姓名");
+      if (!row.contact) notes.push("缺联系方式");
+      if (!row.subjects) notes.push("缺科目");
+      if (!row.school && !row.degree) notes.push("教育背景不完整");
+      if (/低价|包过|保过|百分百|绝对提分/.test(raw)) notes.push("存在夸张承诺词");
+      return notes.join("；");
+    }
+
+    function parseOne(raw, index) {
+      const text = raw.trim();
+      const key = rowKey(text, index);
+      const row = {
+        id: key,
+        raw: text,
+        added_by: addedByMap[key] || "",
+        name: firstLineLikeName(text) || pick(text, [/(?:姓名|老师姓名|教师姓名)\s*[：:]\s*([^\n，,。；;]+)/]),
+        gender: pick(text, [/(?:性别)\s*[：:]\s*([男女])/, /(?:^|[，,\s])([男女])(?:，|,|\s|$)/]),
+        age: pick(text, [/(?:年龄)\s*[：:]\s*(\d{1,2})/, /(\d{2})\s*岁/]),
+        school: pick(text, [/(?:学校|院校|就读学校|毕业院校)\s*[：:]\s*([^\n，,。；;]+)/, /([\u4e00-\u9fa5]{2,20}(?:大学|学院|师范|中学))/]),
+        major: pick(text, [/(?:专业|所学专业)\s*[：:]\s*([^\n，,。；;]+)/, /([\u4e00-\u9fa5A-Za-z]{2,30}(?:专业|工程|教育|数学|英语|物理|化学|中文|计算机|机械|自动化|金融|经济|法学))/]),
+        degree: inferDegree(text),
+        subjects: inferSubjects(text),
+        grades: inferGrades(text),
+        experience: extractExperience(text),
+        price: pick(text, [/(?:期望薪资|薪资|课时费|价格|收费)\s*[：:]\s*([^\n。；;]+)/, /(\d{2,4}\s*[-~—至]?\s*\d{0,4}\s*(?:元\/小时|元每小时|元\/h|\/h|每小时|一小时|元))/i]),
+        mode: inferMode(text),
+        contact: pick(text, [/(1[3-9]\d{9})/, /([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})/, /(?:微信|VX|WeChat|电话|手机|联系方式)\s*[：:]\s*([^\n，,。；;]+)/i]),
+        notes: ""
+      };
+      row.notes = detectRisk(row, text);
+      row.teacher_key = teacherKey(row);
+      return row;
+    }
+
+    function splitResumes(text) {
+      const normalized = text.replace(/\r\n/g, "\n").trim();
+      if (!normalized) return [];
+      const parts = normalized
+        .split(/\n\s*(?:-{3,}|={3,}|\*{3,}|第\s*\d+\s*份|简历\s*\d+|老师\s*\d+)\s*\n/g)
+        .map(p => p.trim())
+        .filter(Boolean);
+      if (parts.length > 1) return parts;
+      return normalized.split(/\n{3,}/).map(p => p.trim()).filter(Boolean);
+    }
+
+    function parseAll() {
+      rows = splitResumes(input.value).map(parseOne);
+      render();
+    }
+
+    function filteredRows() {
+      const k = search.value.trim();
+      if (!k) return rows;
+      return rows.filter(r =>
+        exportFields.some(([key]) => String(r[key] || "").includes(k)) || r.raw.includes(k)
+      );
+    }
+
+    function escapeHtml(s) {
+      return String(s ?? "").replace(/[&<>"']/g, c => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      }[c]));
+    }
+
+    function renderAdderSelect(row) {
+      const options = adderOptions.map(opt => {
+        const label = opt || "请选择";
+        const selected = row.added_by === opt ? "selected" : "";
+        return `<option value="${escapeHtml(opt)}" ${selected}>${escapeHtml(label)}</option>`;
+      }).join("");
+      return `<select data-row-id="${escapeHtml(row.id)}" class="adder-select">${options}</select>`;
+    }
+
+    function isSaved(row) {
+      return savedRows.some(s => s.teacher_key === row.teacher_key && row.teacher_key !== "info:||");
+    }
+
+    function renderRecognizedTable() {
+      thead.innerHTML = fields.map(([_, label]) => `<th>${escapeHtml(label)}</th>`).join("");
+      const list = filteredRows();
+      tbody.innerHTML = list.map(r => {
+        return `<tr>${fields.map(([key]) => {
+          if (key === "action") {
+            const disabled = isSaved(r) ? "disabled" : "";
+            const label = isSaved(r) ? "已在总表" : "添加到总表";
+            const cls = isSaved(r) ? "small secondary" : "small ok add-summary-btn";
+            return `<td><button class="${cls}" data-row-id="${escapeHtml(r.id)}" ${disabled}>${label}</button></td>`;
+          }
+          if (key === "added_by") return `<td>${renderAdderSelect(r)}</td>`;
+          const v = r[key] || "";
+          if (!v) return `<td><span class="muted">—</span></td>`;
+          if (key === "notes") return `<td><span class="warn">${escapeHtml(v)}</span></td>`;
+          return `<td>${escapeHtml(v)}</td>`;
+        }).join("")}</tr>`;
+      }).join("");
+
+      tbody.querySelectorAll(".adder-select").forEach(sel => {
+        sel.addEventListener("change", e => {
+          const id = e.target.getAttribute("data-row-id");
+          const value = e.target.value;
+          addedByMap[id] = value;
+          rows = rows.map(r => r.id === id ? { ...r, added_by: value } : r);
+          render();
+        });
+      });
+
+      tbody.querySelectorAll(".add-summary-btn").forEach(btn => {
+        btn.addEventListener("click", e => {
+          const id = e.target.getAttribute("data-row-id");
+          const row = rows.find(r => r.id === id);
+          if (row) addToCloudSummary(row);
+        });
+      });
+    }
+
+    function renderSummaryTable() {
+      summaryThead.innerHTML = summaryFields.map(([_, label]) => `<th>${escapeHtml(label)}</th>`).join("");
+      summaryTbody.innerHTML = savedRows.map((r, i) => {
+        const row = { ...r, idx: i + 1, created_at_text: formatDate(r.created_at) };
+        return `<tr>${summaryFields.map(([key]) => {
+          if (key === "summaryAction") return `<td><button class="small danger delete-summary-btn" data-id="${escapeHtml(r.id)}">删除</button></td>`;
+          const v = row[key] || "";
+          if (!v) return `<td><span class="muted">—</span></td>`;
+          if (key === "notes") return `<td><span class="warn">${escapeHtml(v)}</span></td>`;
+          return `<td>${escapeHtml(v)}</td>`;
+        }).join("")}</tr>`;
+      }).join("");
+
+      summaryTbody.querySelectorAll(".delete-summary-btn").forEach(btn => {
+        btn.addEventListener("click", async e => {
+          const id = e.target.getAttribute("data-id");
+          await deleteSummaryRow(id);
+        });
+      });
+    }
+
+    function render() {
+      renderRecognizedTable();
+      renderSummaryTable();
+      count.textContent = rows.length;
+      savedCount.textContent = savedRows.length;
+
+      const core = ["name", "school", "major", "degree", "subjects", "grades", "experience", "contact"];
+      let score = 0;
+      if (rows.length) score = rows.reduce((sum, r) => sum + core.filter(k => r[k]).length / core.length, 0) / rows.length;
+      complete.textContent = Math.round(score * 100) + "%";
+    }
+
+    function formatDate(v) {
+      if (!v) return "";
+      const d = new Date(v);
+      const pad = n => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    async function loadCloudSummary() {
+      saveStatus.textContent = "同步中...";
+      const { data, error } = await sb
+        .from("tutor_resumes")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) {
+        console.error(error);
+        saveStatus.textContent = "同步失败";
+        showToast("云端读取失败：" + error.message);
+        return;
+      }
+      savedRows = data || [];
+      saveStatus.textContent = "已连接云端";
+      render();
+    }
+
+    async function addToCloudSummary(row) {
+      if (!row.added_by) {
+        showToast("请先选择添加人");
+        return;
+      }
+      if (isSaved(row)) {
+        showToast("这个老师已在总表中");
+        return;
+      }
+      const { data: sessionData } = await sb.auth.getSession();
+      const userId = sessionData?.session?.user?.id || null;
+
+      const payload = {
+        teacher_key: row.teacher_key,
+        added_by: row.added_by,
+        name: row.name,
+        gender: row.gender,
+        age: row.age ? Number(row.age) : null,
+        school: row.school,
+        major: row.major,
+        degree: row.degree,
+        subjects: row.subjects,
+        grades: row.grades,
+        experience: row.experience,
+        price: row.price,
+        mode: row.mode,
+        contact: row.contact,
+        notes: row.notes,
+        raw_text: row.raw,
+        created_by: userId
+      };
+
+      const { error } = await sb.from("tutor_resumes").insert(payload);
+      if (error) {
+        console.error(error);
+        showToast("保存失败：" + error.message);
+        return;
+      }
+      showToast("已添加到云端总表");
+      await loadCloudSummary();
+    }
+
+    async function deleteSummaryRow(id) {
+      if (!confirm("确定删除这条总表记录吗？")) return;
+      const { error } = await sb.from("tutor_resumes").delete().eq("id", id);
+      if (error) {
+        console.error(error);
+        showToast("删除失败：" + error.message);
+        return;
+      }
+      showToast("已删除");
+      await loadCloudSummary();
+    }
+
+    function toCsv(list, fieldList) {
+      const header = fieldList.map(f => f[1]);
+      const body = list.map((r, idx) => {
+        const row = { ...r, idx: idx + 1, created_at_text: formatDate(r.created_at) };
+        return fieldList.map(([key]) => String(row[key] || "").replace(/"/g, '""'));
+      });
+      return [header, ...body].map(line => line.map(v => `"${v}"`).join(",")).join("\n");
+    }
+
+    function downloadCsv(list, fieldList, filename) {
+      const csv = "\uFEFF" + toCsv(list, fieldList);
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 0);
+      showToast("CSV 已导出");
+    }
+
+    async function copyTable(list, fieldList, msg) {
+      const text = [
+        fieldList.map(f => f[1]).join("\t"),
+        ...list.map((r, idx) => {
+          const row = { ...r, idx: idx + 1, created_at_text: formatDate(r.created_at) };
+          return fieldList.map(([key]) => row[key] || "").join("\t");
+        })
+      ].join("\n");
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast(msg);
+      } catch (e) {
+        const helper = document.createElement("textarea");
+        helper.value = text;
+        document.body.appendChild(helper);
+        helper.select();
+        document.execCommand("copy");
+        document.body.removeChild(helper);
+        showToast(msg);
+      }
+    }
+
+    async function checkSession() {
+      const { data } = await sb.auth.getSession();
+      if (data.session) {
+        loginPage.style.display = "none";
+        app.style.display = "block";
+        el("userBadge").textContent = "已登录：" + data.session.user.email;
+        await loadCloudSummary();
+        parseAll();
+      } else {
+        loginPage.style.display = "grid";
+        app.style.display = "none";
+      }
+    }
+
+    async function login() {
+      const email = el("email").value.trim();
+      const password = el("password").value;
+      el("loginError").textContent = "";
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) {
+        el("loginError").textContent = error.message;
+        return;
+      }
+      await checkSession();
+    }
+
+    async function signup() {
+      const email = el("email").value.trim();
+      const password = el("password").value;
+      el("loginError").textContent = "";
+      const { error } = await sb.auth.signUp({ email, password });
+      if (error) {
+        el("loginError").textContent = error.message;
+        return;
+      }
+      showToast("注册成功，请登录或查收验证邮件");
+      await checkSession();
+    }
+
+    async function logout() {
+      await sb.auth.signOut();
+      await checkSession();
+    }
+
+    input.addEventListener("input", parseAll);
+    search.addEventListener("input", render);
+    el("clearBtn").addEventListener("click", () => { input.value = ""; addedByMap = {}; parseAll(); });
+    el("sampleBtn").addEventListener("click", () => { input.value = sampleText; addedByMap = {}; parseAll(); });
+    el("downloadCurrentBtn").addEventListener("click", () => downloadCsv(filteredRows(), exportFields, "当前识别结果.csv"));
+    el("copyCurrentBtn").addEventListener("click", () => copyTable(filteredRows(), exportFields, "当前识别已复制"));
+    el("downloadSummaryBtn").addEventListener("click", () => downloadCsv(savedRows, summaryExportFields, "家教老师云端总表.csv"));
+    el("copySummaryBtn").addEventListener("click", () => copyTable(savedRows, summaryExportFields, "总表已复制"));
+    el("refreshBtn").addEventListener("click", loadCloudSummary);
+    el("loginBtn").addEventListener("click", login);
+    el("signupBtn").addEventListener("click", signup);
+    el("logoutBtn").addEventListener("click", logout);
+
+    window.addEventListener("beforeinstallprompt", e => {
+      e.preventDefault();
+      deferredPrompt = e;
+      el("installBtn").style.display = "inline-block";
+    });
+
+    el("installBtn").addEventListener("click", async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      el("installBtn").style.display = "none";
+    });
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(console.error));
+    }
+
+    sb.auth.onAuthStateChange(() => checkSession());
+    input.value = sampleText;
+    checkSession();
+  </script>
+</body>
+</html>
